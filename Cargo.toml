@@ -1,6 +1,10 @@
 [package]
 name = "nsid"
 version = "0.0.1"
+description = "NameSpaced IDs (NSIDs) for the AT Protocol."
+repository = "https://github.com/maxdeviant/nsid"
+authors = ["Marshall Bowers <elliott.codes@gmail.com>"]
+license = "MIT"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
