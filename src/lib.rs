@@ -4,7 +4,7 @@ mod parser;
 use std::fmt;
 use std::str::FromStr;
 
-use parser::Parser;
+use parser::{ParseNsidError, Parser};
 
 /// A NameSpaced ID (NSID).
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone)]
@@ -34,24 +34,25 @@ impl fmt::Display for Nsid {
     }
 }
 
-#[derive(Debug)]
-pub enum ParseNsidError {
-    TooFewSegments,
-}
-
 impl FromStr for Nsid {
     type Err = ParseNsidError;
 
     fn from_str(nsid: &str) -> Result<Self, Self::Err> {
         let parser = Parser::new(nsid);
 
-        let segments = parser.parse().expect("Failed to parse NSID");
+        let segments = parser.parse()?;
 
         match segments.split_last() {
-            Some((name, authority)) => Ok(Self {
-                authority_segments: authority.iter().map(ToString::to_string).collect(),
-                name: name.to_string(),
-            }),
+            Some((name, authority)) => {
+                if authority.len() < 2 {
+                    return Err(ParseNsidError::TooFewSegments);
+                }
+
+                Ok(Self {
+                    authority_segments: authority.iter().map(ToString::to_string).collect(),
+                    name: name.to_string(),
+                })
+            }
             None => Err(ParseNsidError::TooFewSegments),
         }
     }
@@ -80,5 +81,26 @@ mod tests {
         assert_eq!(nsid.authority(), "cool.long-thing1.com");
         assert_eq!(nsid.name(), "fooBarBaz");
         assert_eq!(format!("{}", nsid), "com.long-thing1.cool.fooBarBaz");
+    }
+
+    #[test]
+    fn it_does_not_parse_invalid_nsids() {
+        assert_eq!(
+            Nsid::from_str("com.1example.foo"),
+            Err(ParseNsidError::SyntaxError("1".to_string()))
+        );
+        assert_eq!(
+            Nsid::from_str("com.example!.foo"),
+            Err(ParseNsidError::SyntaxError("!".to_string()))
+        );
+        assert_eq!(
+            Nsid::from_str("com.example.*.foo"),
+            Err(ParseNsidError::SyntaxError("*".to_string()))
+        );
+        assert_eq!(Nsid::from_str("foo"), Err(ParseNsidError::TooFewSegments));
+        assert_eq!(
+            Nsid::from_str("foo/bar"),
+            Err(ParseNsidError::SyntaxError("/".to_string()))
+        );
     }
 }
