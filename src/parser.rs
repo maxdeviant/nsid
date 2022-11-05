@@ -2,9 +2,15 @@ use std::iter::Peekable;
 
 use crate::lexer::{Lexer, Token, TokenKind};
 
+/// An error from parsing an NSID.
 #[derive(Debug, PartialEq, Eq)]
 pub enum ParseNsidError {
+    /// The NSID contained too few segments.
+    ///
+    /// NSIDs must contain a minimum of three (3) segments.
     TooFewSegments,
+
+    /// A syntax error was encountered while parsing the NSID.
     SyntaxError(String),
 }
 

@@ -1,10 +1,15 @@
+//! NameSpaced IDs (NSIDs) for the [AT Protocol](https://atproto.com).
+
+#![warn(missing_docs)]
+
 mod lexer;
 mod parser;
 
 use std::fmt;
 use std::str::FromStr;
 
-use parser::{ParseNsidError, Parser};
+pub use parser::ParseNsidError;
+use parser::Parser;
 
 /// A NameSpaced ID (NSID).
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone)]
@@ -14,6 +19,7 @@ pub struct Nsid {
 }
 
 impl Nsid {
+    /// Returns the authority of the NSID.
     pub fn authority(&self) -> String {
         self.authority_segments
             .iter()
@@ -23,6 +29,7 @@ impl Nsid {
             .join(".")
     }
 
+    /// Returns the name of the NSID.
     pub fn name(&self) -> &str {
         &self.name
     }
